@@ -18,61 +18,76 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/pessoas")
 @Tag(name = "Pessoas", description = "Gerenciamento de pessoas")
 public class PessoaController {
 
     @Autowired
     private PessoaService pessoaService;
 
-    @GetMapping("/pessoas/{id}")
-    @Operation(summary = "Obter pessoas por ID", description = "Retorna uma pessoa com base no ID fornecido")
+    // Método GET
+    @GetMapping("/{id}")
+    @Operation(summary = "Obter pessoa por ID", description = "Retorna uma pessoa com base no ID fornecido")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pessoa encontrada!"),
             @ApiResponse(responseCode = "404", description = "Pessoa não encontrada!",
                     content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
-            @ApiResponse(responseCode = "500", description = "Erro interno no servidor!"),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor!",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
     })
-    // PathVariable captura variáveis da URL
     public Pessoa getPessoaById(@PathVariable Long id) { return pessoaService.getPessoaById(id); }
 
-    @GetMapping("/pessoas")
+    // Método GET
+    @GetMapping
     @Operation(summary = "Obter todas as pessoas", description = "Retorna uma lista de pessoas")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pessoas encontradas!"),
-            @ApiResponse(responseCode = "404", description = "Nenhuma pessoa foi encontrada!"),
-            @ApiResponse(responseCode = "500", description = "Requisição inválida"),
+            @ApiResponse(responseCode = "404", description = "Nenhuma pessoa encontrada!",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
     })
     public List<Pessoa> getAllPessoa() { return pessoaService.getAllPessoa(); }
 
-    @PostMapping("/pessoas")
+    // Método POST
+    @PostMapping
+    @Operation(summary = "Adicionar pessoa", description = "Adicionar uma pessoa")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Pessoa adicionada com sucesso!"),
-            @ApiResponse(responseCode = "500", description = "Requisição inválida!"),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor!",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
     })
     public ResponseEntity<Pessoa> save(@Valid @RequestBody Pessoa savedPessoa) {
         Pessoa pessoa =  pessoaService.savePessoa(savedPessoa);
         return ResponseEntity.created(URI.create("/api/pessoas/" + pessoa.getId())).body(pessoa);
     }
 
-    @PutMapping("/pessoas/{id}")
+    // Método UPDATE
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar pessoa", description = "Atualizar o registro de uma pessoa")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Informações foram alteradas com sucesso!"),
-            @ApiResponse(responseCode = "400", description = "Não foi possivel encontrar a pessoa!"),
-            @ApiResponse(responseCode = "500", description = "Requisição inválida!"),
+            @ApiResponse(responseCode = "200", description = "Informações alteradas com sucesso!"),
+            @ApiResponse(responseCode = "404", description = "Pessoa não encontrada!",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor!",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
     })
-    public ResponseEntity<Pessoa> edit(@PathVariable Long id, @RequestBody Pessoa updatePessoa) {
+    public ResponseEntity<Pessoa> edit(@PathVariable Long id,@Valid @RequestBody Pessoa updatePessoa) {
         Pessoa pessoa = pessoaService.updatePessoa(id, updatePessoa);
         return pessoa != null ? ResponseEntity.ok(pessoa) : ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/pessoas/{id}")
+    // Método DELETE
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Apagar pessoa", description = "Apagar uma pessoa")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pessoa excluída com sucesso!"),
-            @ApiResponse(responseCode = "400", description = "Não foi possivel encontrar a pessoa!"),
-            @ApiResponse(responseCode = "500", description = "Requisição inválida!"),
+            @ApiResponse(responseCode = "204", description = "Pessoa excluída com sucesso!"),
+            @ApiResponse(responseCode = "404", description = "Pessoa não encontrada!",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
+            @ApiResponse(responseCode = "500", description = "Requisição inválida!",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
     })
-    public ResponseEntity<Pessoa> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         boolean deleted = pessoaService.deletePessoa(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }

@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ErrorDetails {
+    // Definindo o modelo padrão de Erros de Detalhe
     private int statusCode;
     private String message;
     private String details;
