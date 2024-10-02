@@ -2,31 +2,42 @@ package com.spring_openapi.application.controller;
 
 import java.net.URI;
 import java.util.List;
+
+import com.spring_openapi.application.exception.ErrorDetails;
 import com.spring_openapi.application.model.Pessoa;
 import com.spring_openapi.application.service.PessoaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Pessoas", description = "Gerenciamento de pessoas")
 public class PessoaController {
 
     @Autowired
     private PessoaService pessoaService;
 
     @GetMapping("/pessoas/{id}")
+    @Operation(summary = "Obter pessoas por ID", description = "Retorna uma pessoa com base no ID fornecido")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pessoa encontrada!"),
-            @ApiResponse(responseCode = "404", description = "Não foi possivel encontrar a pessoa!"),
-            @ApiResponse(responseCode = "500", description = "Requisição inválida!"),
+            @ApiResponse(responseCode = "404", description = "Pessoa não encontrada!",
+                    content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor!"),
     })
     // PathVariable captura variáveis da URL
     public Pessoa getPessoaById(@PathVariable Long id) { return pessoaService.getPessoaById(id); }
 
     @GetMapping("/pessoas")
+    @Operation(summary = "Obter todas as pessoas", description = "Retorna uma lista de pessoas")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pessoas encontradas!"),
             @ApiResponse(responseCode = "404", description = "Nenhuma pessoa foi encontrada!"),
@@ -39,7 +50,7 @@ public class PessoaController {
             @ApiResponse(responseCode = "201", description = "Pessoa adicionada com sucesso!"),
             @ApiResponse(responseCode = "500", description = "Requisição inválida!"),
     })
-    public ResponseEntity<Pessoa> save(@RequestBody Pessoa savedPessoa) {
+    public ResponseEntity<Pessoa> save(@Valid @RequestBody Pessoa savedPessoa) {
         Pessoa pessoa =  pessoaService.savePessoa(savedPessoa);
         return ResponseEntity.created(URI.create("/api/pessoas/" + pessoa.getId())).body(pessoa);
     }
